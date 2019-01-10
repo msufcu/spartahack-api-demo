@@ -1,0 +1,20 @@
+
+table {
+    border-collapse: collapse;
+}
+
+div {
+    border: solid 1px #000000;
+    padding: 1em;
+    margin: 1em;
+}
+
+td {
+    padding:5px;
+    border:solid 1px #000000;
+}
+
+a {
+    display:block;
+    padding: 5px;
+}
