@@ -1,17 +1,22 @@
+body {
+    background-color:#eeeeee;
+}
 
 table {
     border-collapse: collapse;
 }
 
 div {
-    border: solid 1px #000000;
+    border: solid 1px #dddddd;
     padding: 1em;
     margin: 1em;
+    background-color:#FFFFFF;
+    box-shadow:#cccccc 5px 5px 2px;
 }
 
 td {
     padding:5px;
-    border:solid 1px #000000;
+    border:solid 1px #999999;
 }
 
 a {

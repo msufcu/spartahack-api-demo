@@ -16,8 +16,9 @@
 
         function show_metadata($item) {
             echo "<h2>";
-            foreach ($item['icons'] as $size => $icon) {
-                echo "<img src='$icon' title='$size' />";
+            if(!empty($item['icons']) && !empty($item['icons']['x32'])) {
+                $icon = $item['icons']['x32'];
+                echo "<img src='$icon' />";
             }
             echo "$item[name] - $item[version]</h2>";
             echo "<p>$item[description]</p>";
@@ -26,7 +27,7 @@
                 echo "<a href='$item[discoveryRestUrl]' target='_blank'>Discovery(raw)</a>";
             }
             if (!empty($item['documentationLink'])) {
-                echo "<a href='$item[documentationLink]' target='_blank'>Developer Documentation</a>";
+                echo "<a href='$item[documentationLink]' target='_blank'>Documentation ($item[documentationLink])</a>";
             }
         }
 
@@ -35,8 +36,6 @@
             $api_url = $_GET['url'];
         }
         $ch = curl_init($api_url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $json = curl_exec($ch);
         if (curl_errno($ch) > 0) {
@@ -56,20 +55,33 @@
                         }
                         break;
                     case 'discovery#restDescription' :
+                        echo '<div>';
                         show_metadata($data);
-                        echo "<table cellspacing='0' cellpadding='0'>";
+                        echo "<table>";
                         foreach ($data as $key => $value) {
                             if (!is_array($value) && '' != $value) {
                                 echo "<tr><td>$key</td><td>$value</td></tr>\n";
                             }
                         }
-                        echo "</table>";
+                        echo "</table></div>";
 
                         if (!empty($data['schemas'])) {
                             foreach ($data['schemas'] as $name => $schema) {
-                                echo "<div><h3>$name</h3>";
+                                echo "<div><h3>Schema: $name</h3>";
                                 if (!empty($schema['description'])) {
                                     echo "<p>$schema[description]</p>";
+                                }
+                                if(!empty($schema['properties'])) {
+                                    echo '<h4>Properties:</h4>'
+                                    . '<table>'
+                                            . '<thead>'
+                                            . '<tr><th>Name</th><th>Type</th><th>Description</th></tr>'
+                                            . '</thead><tbody>';
+                                    foreach($schema['properties'] as $pname => $prop) {
+                                        echo "<tr><td>$pname</td><td>$prop[type]</td><td>$prop[description]</td></tr>";
+                                    }
+                                    echo '</tbody></table>';
+                                    
                                 }
                                 echo "</div>";
                             }
