@@ -17,7 +17,16 @@ def get_metadata ( item ) :
 	block = '<h2>'
 	if item.get('icons'):
 		block += '<img src="%s" />' % html_escape(item.get('icons').get('x32'))
-	block += '%s - %s</h2>' % (html_escape(item.get('name', 'endpoint')), html_escape(item.get('version', 'v?')))
+		
+	#grab the name, default to 'endpoint' if it's not found
+	name = html_escape(item.get('name', 'endpoint'))
+	
+	#if the item has a property called preferred with a value of false, strike out the name
+	if not item.get('preferred', True):
+		name = '<s>%s</s>' % name
+		
+	#add the title and version to the heading
+	block += '%s - %s</h2>' % (name, html_escape(item.get('version', 'v?')))
 	
 	#add the description, if there is one
 	block += '<p><em>%s</em></p>' % html_escape(item.get('description', 'No Description'))
