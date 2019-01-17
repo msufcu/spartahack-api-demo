@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+import requests, sys, os
 from cgi import parse_qs, escape
-import requests
 
-#escape reserved HTML characters, and convert non-ascii characters into entity references
-def html_escape( raw ) :
-	return (escape(raw).encode('ascii', 'xmlcharrefreplace'))
+#for some reason, mod_wsgi doesn't import from the currentd directory. add it to the path
+dir = os.path.dirname(__file__)
+if dir not in sys.path:
+	sys.path.insert(0, dir)
+
+from html_helper import html_escape, build_html_page
+
 
 #take the metadata about an endpoint and format it for display
 def get_metadata ( item ) :
@@ -43,15 +47,10 @@ def application ( env, start_response ):
 		api_url = query_params.get('url')[0]
 	
 	#start building the response body
-	response_body = '''<!doctype HTML>
-<html>
-    <head>
-        <title>
-            API Discovery Tool
-        </title>
-        <link rel="stylesheet" type="text/css" href="../php/api.css" />
-    </head>
-    <body>'''
+	response_body = '<div>API Results for <a href="{0}" target="_blank">{0}</a></div>'.format(html_escape(api_url))
+	
+	#default title, may get overridden
+	response_title = "API Discovery Tool"
 	
 	r = {}
 	try :
@@ -69,6 +68,11 @@ def application ( env, start_response ):
 				
 		#discovery#restDescription is the details about a single endpoint		
 		if 'discovery#restDescription' == r.get('kind'):
+		
+			#change the title to the name of the web service we're looking at
+			if(r.get('name')):
+				response_title = r.get('name')
+		
 			#show the metadata at the top of the response
 			response_body += '<div>' + get_metadata(r)
 			
@@ -108,20 +112,19 @@ def application ( env, start_response ):
 							response_body += '<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>'.format(html_escape(propname), html_escape(property.get('type', '-')), html_escape(property.get('description', '-')))
 						response_body += '</tbody></table>'
 					response_body += '</div>'
-	response_body += '</body></html>'
-	
-	response_body = bytes(response_body)
+					
+	response_html = bytes(build_html_page(response_title, response_body))
 	
 	# HTTP response code and message
 	status = '200 OK'
 
 	response_headers = [
 		('Content-Type', 'text/html'),
-		('Content-Length', str(len(response_body)))
+		('Content-Length', str(len(response_html)))
 	]
 
 	# Start the HTTP response by sending the status and headers
 	start_response(status, response_headers)
 
 	#send the content
-	return [response_body]
+	return [response_html]
