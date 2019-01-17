@@ -1,4 +1,4 @@
-# spartahack-api-tech-talk
+# spartahack-api-demo
 Sample code to accompany the API talk at Spartahack
 
 ##Usage
